@@ -1,0 +1,33 @@
+
+import redis.clients.jedis.{JedisPool, JedisPoolConfig}
+
+object JedisConnectionPool {
+  private val config: JedisPoolConfig = new JedisPoolConfig
+
+  // 设置最大连接数 一般最多400个连接
+  config.setMaxTotal(5)
+
+  // 最大空闲连接数
+  config.setMaxIdle(3)
+
+  // 获取连接时是否检测有效性
+  config.setTestOnBorrow(true)
+
+  private val pool: JedisPool = new JedisPool(config, "hadoop04", 6379)
+
+  // 获取连接的方法
+  def getConnection = pool.getResource
+
+// 这里是测试是否连接上了redis,如果连接上了会输出PANG
+//  def main(args: Array[String]): Unit = {
+//    val conn = getConnection
+//    val str: String = conn.ping()
+//    println(str)
+//  }
+
+}
+
+// 向redis中插入数据并关闭连接
+// conn.set(user + "_" + currentTime, avgTime.toString)
+// conn.close() 
+
