@@ -1,0 +1,33 @@
+import org.apache.spark.rdd.RDD
+import org.apache.spark.{SparkConf, SparkContext}
+import org.elasticsearch.spark._ // 有了这个导入才能用sc.esRDD(...)读取es的数据
+  
+  def main(args: Array[String]): Unit = {
+    // 模板代码
+    val conf = new  SparkConf()
+      .setAppName("GamelogsAnalyze")
+      .setMaster("local[2]")
+      .set("es.nodes", "hadoop04,hadoop05,hadoop06")
+      .set("es.port", "9200")
+      .set("es.index.auto.create", "true")
+      .set("spark.testing.memory", "2147480000")
+
+    val sc = new SparkContext(conf)
+
+    val queryTime = "2016-02-01 00:00:00"
+    val startTime: Long = TimeUtils(queryTime)
+    val endTime: Long = TimeUtils.updateCalendar(+1)
+
+    val startTimeForMorrow = TimeUtils.updateCalendar(+1)
+    val endTimeForMorrow = TimeUtils.updateCalendar(+2)
+
+    // 获取数据的条件
+    val query =
+      """
+        {"query":{"match_all":{}}}
+      """.stripMargin
+
+    // 获取数据, 因为第一个值为id, 所以需要过滤掉,只需要把id对应的数据拿到即可
+    val dataRDD: RDD[collection.Map[String, AnyRef]] = sc.esRDD("gamelogs", query).map(_._2)
+    
+    }
